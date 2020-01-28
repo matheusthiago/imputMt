@@ -189,35 +189,28 @@ meanImputation = function(dadoTemp, type){
 ssaImputation = function(dadoTemp, n, method, type){
 	print("-------entrou no SSA------------")
 	if(method==1){
-		s=ssa(dadoTemp, n)
+		s=Rssa::ssa(dadoTemp, n)
 		dadoImputado=Rssa::igapfill(s, groups=list(1:6))
-	}
-		else if(method==2){
-			if(n<=10){
-				g=1
-				n=10
-			}else if(n<=100){
-				g=6
-			}else if(n>100){
-				g=95
-			}
-			if(type==1){ #Consecutivo
-				s=ssa(dadoTemp, n)
-				dadoImputado=Rssa::gapfill(s, groups=list(1:g))		
-			}
-			else if(type==2){ #Aleatório
-				n=10
-				g=2
-				s=ssa(dadoTemp, n)
-				dadoImputado=Rssa::gapfill(s, groups=list(1:g))
-			}
+		}
+	else if(method==2){
+		if(n<=10){
+			g=1
+			n=10
+		}else if(n<=100){
+			g=6
+		}else if(n>100){
+			g=95
+		}
+		if(type==1){ #Consecutivo
+			s=Rssa::ssa(dadoTemp, n)
+			dadoImputado=Rssa::gapfill(s, groups=list(1:g))		
+		}
+		else if(type==2){ #Aleatório
+			n=10
+			g=2
+			s=Rssa::ssa(dadoTemp, n)
+			dadoImputado=Rssa::gapfill(s, groups=list(1:g))
+		}
 		}
 	return(dadoImputado)
 }
-
-
-
-
-
-
-
