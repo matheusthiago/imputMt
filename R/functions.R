@@ -26,6 +26,7 @@ imputation <- function(method, dado, n){
 	if (missing(method)){
     	print("You must specify a value for the 'n'")
   	}
+  	print("noooovo")
 	print(method)
 	print(n)
 	print(summary(dado))
@@ -213,5 +214,10 @@ ssaImputation = function(dadoTemp, n, method, type){
 		}
 	return(dadoImputado)
 }
+
+
+
+
+
 
 
