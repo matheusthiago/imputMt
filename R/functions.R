@@ -1,10 +1,11 @@
 #package imput
 #biblioteca para imputação de dados 
 # library to impute data 
-require(imputeTS)
-require(forecast)
-library(Rssa)
-library(spectral.methods)
+#require(imputeTS)
+#require(forecast)
+
+#library(Rssa)
+#library(spectral.methods)
 # plumber.R
 
 
@@ -34,17 +35,17 @@ imputation <- function(method, dado, n){
 	n=(as.numeric(n))
 
 	switch(method,
-		'linear_interpolation'=(dadoImputado=interpolationImputation(dado, 1)),
-    	'spline_interpolation'=(dadoImputado=interpolationImputation(dado, 2)),
-    	'stine_interpolation'=(dadoImputado=interpolationImputation(dado, 3)),
+		'linear'=(dadoImputado=interpolationImputation(dado, 1)),
+    	'spline'=(dadoImputado=interpolationImputation(dado, 2)),
+    	'stine'=(dadoImputado=interpolationImputation(dado, 3)),
 	    'kalmanSmoothing'=(dadoImputado=kalman(dado, 1)),
 	    'kalmanRun'=(dadoImputado=kalman(dado,2)),
 	    'kalmanTS'=(dadoImputado=kalman(dado,3)),
 	    'kalmanArima'=(dadoImputado=kalman(dado,4)),
 	    'locf'=(dadoImputado=locfImputation(dado)),
-	    'movingAverage_simple'=(dadoImputado=movingAverageImputation(dado,1, n)),
-	    'movingAverage_linear'=(dadoImputado=movingAverageImputation(dado,2, n)),
-	    'movingAverage_exponential'=(dadoImputado=movingAverageImputation(dado,3, n)),
+	    'SMA'=(dadoImputado=movingAverageImputation(dado,1, n)),
+	    'LMA'=(dadoImputado=movingAverageImputation(dado,2, n)),
+	    'EMA'=(dadoImputado=movingAverageImputation(dado,3, n)),
 	    'ssa1'=(dadoImputado=ssaImputation(dado, n, 1, 1)),
 		'ssa'=(dadoImputado=ssaImputation(dado, n, 2, 1)),
 	    'mean'=(dadoImputado=meanImputation(dado, 1)),
@@ -60,7 +61,7 @@ imputation <- function(method, dado, n){
 
 	print("----------fim--------")
 
-	dadoImputado	
+	return(dadoImputado)	
 }
 
 
@@ -71,22 +72,22 @@ imputation <- function(method, dado, n){
 #' @return dado 
 
 printDado<-function(dado){
-	print(dado)
+	return(dado)
 }
 
 
 interpImputation=function(dadoTemp, freq){
 	dadoTemp <- ts(dadoTemp, frequency = freq)
-	dadoImputado=na.interp(dadoTemp)
+	dadoImputado=imputeTS::na_interp(dadoTemp)
 	return(dadoImputado)
 }
 
 seaImputation = function(dadoTemp, type, freq){
 	dadoTemp <- ts(dadoTemp, frequency = freq)
 	if(type==1){
-		dadoImputado=na.seadec(dadoTemp)
+		dadoImputado=imputeTS::na_seadec(dadoTemp)
 	}else if (type==2){
-		dadoImputado=na.seasplit(dadoTemp)
+		dadoImputado=imputeTS::na_seasplit(dadoTemp)
 	}
 	return(dadoImputado)
 }
@@ -98,18 +99,18 @@ kalman= function(dadoTemp, type, freq){
 
 	if(type==1){
 		#: Perform imputation with KalmanSmoother and state space representation of arima model
-		dadoImputado=na.kalman(dadoTemp)
+		dadoImputado=imputeTS::na_kalman(dadoTemp)
 	}
 	else if(type==2){
 		# Example 2: Perform imputation with KalmanRun and state space representation of arima model
-		dadoImputado=na.kalman(dadoTemp, smooth=FALSE)
+		dadoImputado=imputeTS::na_kalman(dadoTemp, smooth=FALSE)
 	}
 	else if(type==3){
 		#Perform imputation with KalmanSmooth and StructTS model;
-		dadoImputado=na.kalman(dadoTemp, model="StructTS", smooth=TRUE)	
+		dadoImputado=imputeTS::na_kalman(dadoTemp, model="StructTS", smooth=TRUE)	
 	}
 	else if(type==4){
-		dadoImputado=na.kalman(dadoTemp, model="auto.arima")
+		dadoImputado=imputeTS::na_kalman(dadoTemp, model="auto.arima")
 	}
 	return(dadoImputado)
 }
@@ -122,13 +123,15 @@ kalman= function(dadoTemp, type, freq){
 #• "spline" - for spline interpolation using spline 
 #• "stine" - for Stineman interpolation using stinterp
 interpolationImputation = function(dadoTemp, type) {
+	print("passou")
+	print(type)
 	if(type==1){
-		dadoImputado=na.interpolation(dadoTemp)
+		dadoImputado=imputeTS::na_interpolation(dadoTemp)
 	}else if(type==2){
 		dadoTemp=ts(dadoTemp, frequency=3600)
-		dadoImputado=na.interpolation(dadoTemp, option ="spline")
+		dadoImputado=imputeTS::na_interpolation(dadoTemp, option ="spline")
 	}else if(type==3){
-		dadoImputado=na.interpolation(dadoTemp, option ="stine")
+		dadoImputado=imputeTS::na_interpolation(dadoTemp, option ="stine")
 	}
 	return(dadoImputado)
 
@@ -139,7 +142,7 @@ interpolationImputation = function(dadoTemp, type) {
 #Optionally this can also be done starting from the back of the series (Next Observation Carried Backward - NOCB).
 
 locfImputation = function (dadoTemp){
-    dadoImputado=na.locf(dadoTemp)
+    dadoImputado=imputeTS::na_locf(dadoTemp)
 }
 
 
@@ -162,21 +165,21 @@ locfImputation = function (dadoTemp){
 
 movingAverageImputation = function(dadoTemp, type, n){
 	if(type==1){
-		dadoImputado=na.ma(dadoTemp, weighting="simple", k=n)
+		dadoImputado=imputeTS::na_ma(dadoTemp, weighting="simple", k=n)
 	}else if(type==2){
-		dadoImputado=na.ma(dadoTemp, weighting="linear", k=n)
+		dadoImputado=imputeTS::na_ma(dadoTemp, weighting="linear", k=n)
 	}else if(type==3){
-		dadoImputado=na.ma(dadoTemp, weighting="exponential", k=n)
+		dadoImputado=imputeTS::na_ma(dadoTemp, weighting="exponential", k=n)
 	}
 }
 #Missing value replacement by mean values. Different means like median, mean, mode possible.
 meanImputation = function(dadoTemp, type){
 	if(type==1){
-		dadoImputado=na.mean(dadoTemp)
+		dadoImputado=imputeTS::na_mean(dadoTemp)
 	} else if (type==2){
-		dadoImputado=na.mean(dadoTemp, option="median")
+		dadoImputado=imputeTS::na_mean(dadoTemp, option="median")
 	}else if(type==3){
-		dadoImputado=na.mean(dadoTemp, option="mode")
+		dadoImputado=imputeTS::na_mean(dadoTemp, option="mode")
 	}
 }
 
@@ -185,7 +188,7 @@ meanImputation = function(dadoTemp, type){
 ssaImputation = function(dadoTemp, n, method, type){
 	if(method==1){
 		s=ssa(dadoTemp, n)
-		dadoImputado=igapfill(s, groups=list(1:6))
+		dadoImputado=Rssa::igapfill(s, groups=list(1:6))
 	}
 		else if(method==2){
 			if(n<=10){
@@ -198,13 +201,13 @@ ssaImputation = function(dadoTemp, n, method, type){
 			}
 			if(type==1){ #Consecutivo
 				s=ssa(dadoTemp, n)
-				dadoImputado=gapfill(s, groups=list(1:g))		
+				dadoImputado=Rssa::gapfill(s, groups=list(1:g))		
 			}
 			else if(type==2){ #Aleatório
 				n=10
 				g=2
 				s=ssa(dadoTemp, n)
-				dadoImputado=gapfill(s, groups=list(1:g))
+				dadoImputado=Rssa::gapfill(s, groups=list(1:g))
 			}
 		}
 	return(dadoImputado)
