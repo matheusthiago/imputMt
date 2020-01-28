@@ -186,6 +186,7 @@ meanImputation = function(dadoTemp, type){
 
 
 ssaImputation = function(dadoTemp, n, method, type){
+	print("-------entrou no SSA------------")
 	if(method==1){
 		s=ssa(dadoTemp, n)
 		dadoImputado=Rssa::igapfill(s, groups=list(1:6))
