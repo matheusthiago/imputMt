@@ -3,11 +3,9 @@
 # library to impute data 
 #require(imputeTS)
 #require(forecast)
-
 #library(Rssa)
 #library(spectral.methods)
 # plumber.R
-
 
 #' função de imputação
 #' Recebe o método de imputação escolhido, o dado com lacunas e o tamanho da lacuna
@@ -23,16 +21,15 @@ imputation <- function(method, dado, n){
 	if (missing(dado)){
     	print("You must specify a value for the 'dado'")
   	}
-	if (missing(method)){
+	if (missing(n)){
     	print("You must specify a value for the 'n'")
   	}
-  	print("noooovo")
 	print(method)
 	print(n)
 	print(summary(dado))
 
 	dadoImputado=c()
-	freq=3600
+	freq=15
 	n=(as.numeric(n))
 
 	switch(method,
@@ -86,9 +83,9 @@ interpImputation=function(dadoTemp, freq){
 seaImputation = function(dadoTemp, type, freq){
 	dadoTemp <- ts(dadoTemp, frequency = freq)
 	if(type==1){
-		dadoImputado=imputeTS::na_seadec(dadoTemp)
+		dadoImputado=imputeTS::na_seadec(dadoTemp, algorithm = "interpolation")
 	}else if (type==2){
-		dadoImputado=imputeTS::na_seasplit(dadoTemp)
+		dadoImputado=imputeTS::na_seasplit(dadoTemp,  algorithm = "interpolation")
 	}
 	return(dadoImputado)
 }
@@ -193,17 +190,11 @@ ssaImputation = function(dadoTemp, n, method, type){
 		dadoImputado=Rssa::igapfill(s, groups=list(1:6))
 		}
 	else if(method==2){
-		if(n<=10){
-			g=1
-			n=10
-		}else if(n<=100){
-			g=6
-		}else if(n>100){
-			g=95
-		}
 		if(type==1){ #Consecutivo
 			s=Rssa::ssa(dadoTemp, n)
-			dadoImputado=Rssa::gapfill(s, groups=list(1:g))		
+			lst <- grouping.auto(s, grouping.method = "wcor", nclust = 4)
+			dadoImputado=Rssa::gapfill(s, groups = list(c(lst$'1',lst$'2',lst$'3')))
+			dadoImputado[which(dadoImputado<0)]=(dadoImputado[which(dadoImputado<0)])*-1	
 		}
 		else if(type==2){ #Aleatório
 			n=10
