@@ -93,7 +93,7 @@ seaImputation = function(dadoTemp, type, freq){
 #Uses Kalman Smoothing on structural time series models (or on the state space representation of an arima model) for imputation
 
 kalman= function(dadoTemp, type, freq){
-	dadoTemp <- ts(dadoTemp, frequency = 6)
+	dadoTemp <- ts(dadoTemp, frequency = 15)
 
 	if(type==1){
 		#: Perform imputation with KalmanSmoother and state space representation of arima model
@@ -126,9 +126,10 @@ interpolationImputation = function(dadoTemp, type) {
 	if(type==1){
 		dadoImputado=imputeTS::na_interpolation(dadoTemp)
 	}else if(type==2){
-		dadoTemp=ts(dadoTemp, frequency=3600)
+		dadoTemp=ts(dadoTemp, frequency=15)
 		dadoImputado=imputeTS::na_interpolation(dadoTemp, option ="spline")
 	}else if(type==3){
+		dadoTemp=ts(dadoTemp, frequency=15)
 		dadoImputado=imputeTS::na_interpolation(dadoTemp, option ="stine")
 	}
 	return(dadoImputado)
@@ -185,6 +186,7 @@ meanImputation = function(dadoTemp, type){
 
 ssaImputation = function(dadoTemp, n, method, type){
 	print("-------entrou no SSA------------")
+	dadoTemp=ts(dadoTemp, frequency=15)
 	if(method==1){
 		s=Rssa::ssa(dadoTemp, n)
 		dadoImputado=Rssa::igapfill(s, groups=list(1:6))
