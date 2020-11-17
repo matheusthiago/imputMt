@@ -3,9 +3,11 @@
 # library to impute data 
 #require(imputeTS)
 #require(forecast)
+
 #library(Rssa)
 #library(spectral.methods)
 # plumber.R
+
 
 #' função de imputação
 #' Recebe o método de imputação escolhido, o dado com lacunas e o tamanho da lacuna
@@ -21,15 +23,16 @@ imputation <- function(method, dado, n){
 	if (missing(dado)){
     	print("You must specify a value for the 'dado'")
   	}
-	if (missing(n)){
+	if (missing(method)){
     	print("You must specify a value for the 'n'")
   	}
+  	print("noooovo")
 	print(method)
 	print(n)
 	print(summary(dado))
 
 	dadoImputado=c()
-	freq=15
+	freq=3600
 	n=(as.numeric(n))
 
 	switch(method,
@@ -83,9 +86,9 @@ interpImputation=function(dadoTemp, freq){
 seaImputation = function(dadoTemp, type, freq){
 	dadoTemp <- ts(dadoTemp, frequency = freq)
 	if(type==1){
-		dadoImputado=imputeTS::na_seadec(dadoTemp, algorithm = "interpolation")
+		dadoImputado=imputeTS::na_seadec(dadoTemp)
 	}else if (type==2){
-		dadoImputado=imputeTS::na_seasplit(dadoTemp,  algorithm = "interpolation")
+		dadoImputado=imputeTS::na_seasplit(dadoTemp)
 	}
 	return(dadoImputado)
 }
@@ -93,7 +96,7 @@ seaImputation = function(dadoTemp, type, freq){
 #Uses Kalman Smoothing on structural time series models (or on the state space representation of an arima model) for imputation
 
 kalman= function(dadoTemp, type, freq){
-	dadoTemp <- ts(dadoTemp, frequency = 15)
+	dadoTemp <- ts(dadoTemp, frequency = 6)
 
 	if(type==1){
 		#: Perform imputation with KalmanSmoother and state space representation of arima model
@@ -126,10 +129,9 @@ interpolationImputation = function(dadoTemp, type) {
 	if(type==1){
 		dadoImputado=imputeTS::na_interpolation(dadoTemp)
 	}else if(type==2){
-		dadoTemp=ts(dadoTemp, frequency=15)
+		dadoTemp=ts(dadoTemp, frequency=3600)
 		dadoImputado=imputeTS::na_interpolation(dadoTemp, option ="spline")
 	}else if(type==3){
-		dadoTemp=ts(dadoTemp, frequency=15)
 		dadoImputado=imputeTS::na_interpolation(dadoTemp, option ="stine")
 	}
 	return(dadoImputado)
@@ -186,17 +188,22 @@ meanImputation = function(dadoTemp, type){
 
 ssaImputation = function(dadoTemp, n, method, type){
 	print("-------entrou no SSA------------")
-	dadoTemp=ts(dadoTemp, frequency=15)
 	if(method==1){
 		s=Rssa::ssa(dadoTemp, n)
 		dadoImputado=Rssa::igapfill(s, groups=list(1:6))
 		}
 	else if(method==2){
+		if(n<=10){
+			g=1
+			n=10
+		}else if(n<=100){
+			g=6
+		}else if(n>100){
+			g=95
+		}
 		if(type==1){ #Consecutivo
 			s=Rssa::ssa(dadoTemp, n)
-			lst <- grouping.auto(s, grouping.method = "wcor", nclust = 4)
-			dadoImputado=Rssa::gapfill(s, groups = list(c(lst$'1',lst$'2',lst$'3')))
-			dadoImputado[which(dadoImputado<0)]=(dadoImputado[which(dadoImputado<0)])*-1	
+			dadoImputado=Rssa::gapfill(s, groups=list(1:g))		
 		}
 		else if(type==2){ #Aleatório
 			n=10
