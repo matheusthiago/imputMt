@@ -23,14 +23,14 @@ imputation <- function(method, dado, n){
 	if (missing(dado)){
     	print("You must specify a value for the 'dado'")
   	}
-	if (missing(method)){
+	if (missing(n)){
     	print("You must specify a value for the 'n'")
   	}
   	print("noooovo")
 	print(method)
 	print(n)
 	print(summary(dado))
-
+	dado=ts(dado, frequency=15)
 	dadoImputado=c()
 	freq=15
 	n=(as.numeric(n))
@@ -86,9 +86,9 @@ interpImputation=function(dadoTemp, freq){
 seaImputation = function(dadoTemp, type, freq){
 	dadoTemp <- ts(dadoTemp, frequency = freq)
 	if(type==1){
-		dadoImputado=imputeTS::na_seadec(dadoTemp)
+		dadoImputado=imputeTS::na_seadec(dadoTemp,  algorithm = "interpolation")
 	}else if (type==2){
-		dadoImputado=imputeTS::na_seasplit(dadoTemp)
+		dadoImputado=imputeTS::na_seasplit(dadoTemp, algorithm = "interpolation")
 	}
 	return(dadoImputado)
 }
@@ -96,7 +96,7 @@ seaImputation = function(dadoTemp, type, freq){
 #Uses Kalman Smoothing on structural time series models (or on the state space representation of an arima model) for imputation
 
 kalman= function(dadoTemp, type, freq){
-	dadoTemp <- ts(dadoTemp, frequency = 6)
+	dadoTemp <- ts(dadoTemp, frequency = 15)
 
 	if(type==1){
 		#: Perform imputation with KalmanSmoother and state space representation of arima model
@@ -129,7 +129,6 @@ interpolationImputation = function(dadoTemp, type) {
 	if(type==1){
 		dadoImputado=imputeTS::na_interpolation(dadoTemp)
 	}else if(type==2){
-		dadoTemp=ts(dadoTemp, frequency=3600)
 		dadoImputado=imputeTS::na_interpolation(dadoTemp, option ="spline")
 	}else if(type==3){
 		dadoImputado=imputeTS::na_interpolation(dadoTemp, option ="stine")
