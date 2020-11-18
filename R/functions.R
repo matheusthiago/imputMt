@@ -196,7 +196,7 @@ ssaImputation = function(dadoTemp, n, method, type){
 		
 		if(type==1){ #Consecutivo
 			s=Rssa::ssa(dadoTemp, n)
-			lst <- grouping.auto(s, grouping.method = "wcor", nclust = 4)
+			lst <- Rssa::grouping.auto(s, grouping.method = "wcor", nclust = 4)
 			dadoImputado=Rssa::gapfill(s, groups = list(c(lst$'1',lst$'2',lst$'3')))
 #			dadoImputado=Rssa::gapfill(s, groups=list(1:g))
 			
