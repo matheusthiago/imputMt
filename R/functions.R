@@ -32,7 +32,7 @@ imputation <- function(method, dado, n){
 	print(summary(dado))
 
 	dadoImputado=c()
-	freq=3600
+	freq=15
 	n=(as.numeric(n))
 
 	switch(method,
@@ -193,17 +193,13 @@ ssaImputation = function(dadoTemp, n, method, type){
 		dadoImputado=Rssa::igapfill(s, groups=list(1:6))
 		}
 	else if(method==2){
-		if(n<=10){
-			g=1
-			n=10
-		}else if(n<=100){
-			g=6
-		}else if(n>100){
-			g=95
-		}
+		
 		if(type==1){ #Consecutivo
 			s=Rssa::ssa(dadoTemp, n)
-			dadoImputado=Rssa::gapfill(s, groups=list(1:g))		
+			lst <- grouping.auto(s, grouping.method = "wcor", nclust = 4)
+			dadoImputado=Rssa::gapfill(s, groups = list(c(lst$'1',lst$'2',lst$'3')))
+#			dadoImputado=Rssa::gapfill(s, groups=list(1:g))
+			
 		}
 		else if(type==2){ #Aleatório
 			n=10
